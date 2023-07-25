@@ -9,7 +9,7 @@ public:
     CvvImage();
     ~CvvImage();
 
-   
+
     /* Load image from specified file */
     bool  Load( const char* filename);
 
@@ -32,7 +32,7 @@ public:
     /* width and height of ROI */
     int Width() { return m_img.cols; };
     int Height() { return m_img.rows;};
-    int Bpp() { 
+    int Bpp() {
 		int depth = 8;
 		switch (m_img.depth())
 		{
@@ -41,7 +41,7 @@ public:
 		default:
 			break;
 		}
-		return (depth & 255)*m_img.channels(); 
+		return (depth & 255)*m_img.channels();
 	};
 
     /* draw to highgui window */
@@ -52,7 +52,7 @@ public:
     void  Show( HDC dc, int x, int y, int width, int height,
                         int from_x = 0, int from_y = 0 );
     /* draw the current image ROI to the specified rectangle of the destination DC */
-    void  DrawToHDC( HDC hDCDst, RECT* pDstRect );
+    void  DrawToHDC( HDC hDCDst, RECT* pDstRect, BOOL bKeepRatio=TRUE);
 #endif
 
 protected:

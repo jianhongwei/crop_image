@@ -187,7 +187,7 @@ void  CvvImage::Show( HDC dc, int x, int y, int w, int h, int from_x, int from_y
 }
 
 
-void  CvvImage::DrawToHDC(HDC hDCDst, RECT* pDstRect)
+void  CvvImage::DrawToHDC(HDC hDCDst, RECT* pDstRect, BOOL bKeepRatio)
 {
     if( pDstRect && !m_img.empty())
     {
@@ -195,7 +195,7 @@ void  CvvImage::DrawToHDC(HDC hDCDst, RECT* pDstRect)
         BITMAPINFO* bmi = (BITMAPINFO*)buffer;
         int bmp_w = m_img.cols, bmp_h = m_img.rows;
 
-		
+
 		cv::Size sz;
 		cv::Point pt;
 		m_img.locateROI(sz, pt);
@@ -207,7 +207,7 @@ void  CvvImage::DrawToHDC(HDC hDCDst, RECT* pDstRect)
             Show( hDCDst, dst.x, dst.y, dst.width, dst.height, roi.x, roi.y );
             return;
         }
-    
+
         if( roi.width > dst.width )
         {
             SetStretchBltMode(
@@ -220,25 +220,34 @@ void  CvvImage::DrawToHDC(HDC hDCDst, RECT* pDstRect)
                    hDCDst,           // handle to device context
                    COLORONCOLOR );
         }
-	
+
         FillBitmapInfoEx( bmi, bmp_w, bmp_h, Bpp(), 0);
 
-		float fx = (float)dst.width / roi.width;
-		float fy = (float)dst.height / roi.height;
+		if (bKeepRatio)
+		{
+			float fx = (float)dst.width / roi.width;
+			float fy = (float)dst.height / roi.height;
 
-		float f = MIN(fx, fy);
-		int offsetx = (dst.width - f * roi.width) / 2;
-		int offsety = (dst.height - f * roi.height) / 2;
+			float f = MIN(fx, fy);
+			int offsetx = (dst.width - f * roi.width) / 2;
+			int offsety = (dst.height - f * roi.height) / 2;
 
-        ::StretchDIBits(
-            hDCDst,
-            dst.x + offsetx,
-			dst.y + offsety,
-			//dst.width - offsetx * 2,
-			f * roi.width,
-			//dst.height - offsety * 2,
-			f * roi.height,
-            roi.x, roi.y, roi.width, roi.height,
-            m_img.data, bmi, DIB_RGB_COLORS, SRCCOPY );
+			::StretchDIBits(
+				hDCDst,
+				dst.x + offsetx,
+				dst.y + offsety,
+				f * roi.width,
+				f * roi.height,
+				roi.x, roi.y, roi.width, roi.height,
+				m_img.data, bmi, DIB_RGB_COLORS, SRCCOPY);
+		}
+		else
+		{
+			::StretchDIBits(
+				hDCDst,
+				dst.x, dst.y, dst.width, dst.height,
+				roi.x, roi.y, roi.width, roi.height,
+				m_img.data, bmi, DIB_RGB_COLORS, SRCCOPY);
+		}
     }
 }
